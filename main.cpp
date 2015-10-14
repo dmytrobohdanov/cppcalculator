@@ -8,32 +8,40 @@ using namespace std;
 
 // input: written formula
 //output: vector of tokens of input formula
-vector getTokensFromTheLine(string str);
+vector<string> getTokensFromTheLine(string str);
 
 
 // input: tokens from string
 //output: vector of sorted tokens acording to Polish method
-vector makePolishReverse(vector tokens);
+vector <string> makePolishReverse(vector <string> tokens);
 
 // input: vector of sorted tokens acording to Polish method
 //output: double result
-double calculate(vector tokens);
+double calculate(vector <string> tokens);
 
-// input: string with come symbol
+// input: string with some symbol
 //output: if '(' ==> true, else ==> false
 bool isOpenParenthesis(string ch);
 
-// input: string with come symbol
+// input: string with some symbol
 //output: if ')' ==> true, else ==> false
 bool isCloseParenthesis(string ch);
 
-// input: string with come symbol
+// input: string with some symbol
 //output: if it is number ==> true, else ==> false
 bool isNumber(string str);
 
+// input: string we expect it's number
+//output: type double number
+double parseNumber(string str);
+
+// input: some stack of numbers
+//output: top elemnt of stack and delete this element from stack
+double getTopElementFromStack(stack <double > *numbers);
+
 int main()
 {
-    String str;
+    string str;
     cout << "enter string" << endl;
     cin >> str;
     double result = calculate( makePolishReverse( getTokensFromTheLine(str) ) );
@@ -44,7 +52,7 @@ int main()
 
 
 
-vector getTokensFromTheLine(string str){
+vector <string> getTokensFromTheLine(string str){
     vector <string> tokens;
     // have to make array of tokens from the formula
     // where each token is next number or symbol such as + - / * in formula
@@ -61,18 +69,18 @@ bool isNumber(string str){
 }
 
 bool isOpenParenthesis(string ch){
-    if (ch == '(')
+    if (ch[0] == '(')
         return true;
     return false;
 }
 
 bool isCloseParenthesis(string ch){
-    if (ch == ')')
+    if (ch[0] == ')')
         return true;
     return false;
 }
 
-vector makePolishReverse(vector tokens){
+vector <string> makePolishReverse(vector <string> tokens){
     vector <string> newTokenList;
     stack signs;
 
@@ -126,21 +134,32 @@ vector makePolishReverse(vector tokens){
 }
 
 
-double calculate(tokens){
+double calculate(vector <string> tokens){
     std::stack <double> numbers;
-    char operation; // can be: + - / *
+
+    int tokensSize = tokens.size;
     //forEach element of vector
-    //if (str[0] == 0..9)
-    //then it's number, so parse this string to number and push it to stack
-    numbers.push(parseNumber(token));
+    //if it's number - parse string to double and
+    //write it to stack
+    //
+    //else (for now we do not proccess X,y, etc
+    //(we imply in this case this token is actions: + - * /)
+    //so else we take 2 numbers from stack
+    //and process them
 
-    //else
-    //it's  + - / *
-    //operation = tokens[i];
-    //calculate this operation and push result to stack
-    numbers.push(doAction(numbers.pop, operation, numbers.pop));
+    //Do it again while it's not the end of vector
 
-    //and do it again while there is more tokens
+    for (int i = 0; i <= tokensSize; i++){
+        if ( isNumber(tokens[i]) ){
+            numbers.push(parseNumber(tokens[i]));
+        }
+        else{
+            char operation = tokens[i][0];
+            numbers.push(doAction(getTopElementFromStack(numbers), operation, getTopElementFromStack(numbers)));
+        }
+    }
+
+    return numbers.top(); //last element in stack is the result
 }
 
 
@@ -157,4 +176,12 @@ doAction(double a, char sign, double b){
 
     if (sign == '/')
         return a / b;
+}
+
+
+double getTopElementFromStack(stack <double > *numbers){
+    double res;
+    res = numbers->top;
+    numbers->pop;
+    return res;
 }
