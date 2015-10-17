@@ -2,9 +2,11 @@
 #include <cmath>
 #include <vector>
 #include <stack>
+#include <algorithm>
 
 using namespace std;
 
+double doAction(double a, char sign, double b);
 
 // input: written formula
 //output: vector of tokens of input formula
@@ -53,9 +55,28 @@ int main()
 
 
 vector <string> getTokensFromTheLine(string str){
-    vector <string> tokens;
     // have to make array of tokens from the formula
     // where each token is next number or symbol such as + - / * in formula
+
+     string sign = "*/+-";
+    vector <string> tokens;
+        string::iterator begin = str.begin();
+        string::iterator current = str.begin();
+
+
+    while (current != str.end())
+    {
+        while ((find(sign.begin(), sign.end(), *current) == sign.end()) && (current != str.end()))
+            ++current;
+
+        tokens.push_back(string(begin, current));
+        if (current != str.end())
+        {
+            tokens.push_back(string(1,*current));
+            ++current;
+            begin = current;
+        }
+    }
     return tokens;
 }
 
@@ -82,7 +103,7 @@ bool isCloseParenthesis(string ch){
 
 vector <string> makePolishReverse(vector <string> tokens){
     vector <string> newTokenList;
-    stack signs;
+    stack <string> signs;
 
     int tokensSize = tokens.size();
     for (int i; i<tokensSize; i++){
@@ -97,26 +118,26 @@ vector <string> makePolishReverse(vector <string> tokens){
             //take elementfrom from stack and put to newTokenList
             while( ! isOpenParenthesis( signs.top() ) ){
                 newTokenList.push_back(tokens[i]);
-                signs.pop;
+                signs.pop();
             }
             //then remove open parenthesis from stack
-            signs.pop;
+            signs.pop();
             //this part works corrctly if only formula is correct, i.e has same number of  '('  and  ')'
         }
         else { //it's a some sign ( + or - or * or / ) for this version of program,
                 //so here could be problems if formula has any incorrect symbols
                 //this scope is had to be rewritten, because it is totally unflexable and "kostil'"
-            if (tokens[i] == '*' || tokens[i] == '/'){
-                while  (signs.top() == '/' || signs.top() == '*'){
-                    newTokenList.push_back(signs.top);
+            if (tokens[i][0] == '*' || tokens[i][0] == '/'){
+                while  (signs.top()[0] == '/' || signs.top()[0] == '*'){
+                    newTokenList.push_back(signs.top());
                     signs.pop();
                 }
             signs.push(tokens[i]);
             }
 
-            if (tokens[i] == '+' || tokens[i] == '-'){
-                while (signs.top() == '+' || signs.top() == '-' || signs.top() == '/' || signs.top() == '*'){
-                    newTokenList.push_back(signs.top);
+            if (tokens[i][0] == '+' || tokens[i][0] == '-'){
+                while (signs.top()[0] == '+' || signs.top()[0] == '-' || signs.top()[0] == '/' || signs.top()[0] == '*'){
+                    newTokenList.push_back(signs.top());
                     signs.pop();
                 }
                 signs.push(tokens[i]);
@@ -126,7 +147,7 @@ vector <string> makePolishReverse(vector <string> tokens){
     }
 
     while(!signs.empty()){
-        newTokenList.push_back(signs.top);
+        newTokenList.push_back(signs.top());
         signs.pop();
     }
 
@@ -137,7 +158,7 @@ vector <string> makePolishReverse(vector <string> tokens){
 double calculate(vector <string> tokens){
     std::stack <double> numbers;
 
-    int tokensSize = tokens.size;
+    int tokensSize = tokens.size();
     //forEach element of vector
     //if it's number - parse string to double and
     //write it to stack
@@ -155,7 +176,7 @@ double calculate(vector <string> tokens){
         }
         else{
             char operation = tokens[i][0];
-            numbers.push(doAction(getTopElementFromStack(numbers), operation, getTopElementFromStack(numbers)));
+            numbers.push(doAction(getTopElementFromStack(&numbers), operation, getTopElementFromStack(&numbers)));
         }
     }
 
@@ -164,7 +185,7 @@ double calculate(vector <string> tokens){
 
 
 
-doAction(double a, char sign, double b){
+double doAction(double a, char sign, double b){
     if (sign == '+')
         return a + b;
 
@@ -176,12 +197,22 @@ doAction(double a, char sign, double b){
 
     if (sign == '/')
         return a / b;
+    else{
+        cout<<"error in doAction";
+        return -1;
+    }
+
 }
 
 
 double getTopElementFromStack(stack <double > *numbers){
     double res;
-    res = numbers->top;
-    numbers->pop;
+    res = numbers->top();
+    numbers->pop();
     return res;
+}
+
+
+double parseNumber(string str){
+    return atof(str.c_str());
 }
